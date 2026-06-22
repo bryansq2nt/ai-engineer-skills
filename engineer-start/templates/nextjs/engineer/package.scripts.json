@@ -1,0 +1,17 @@
+{
+  "_comment": "Scaffolded by /engineer-start. Merge these into the project's package.json scripts.",
+  "scripts": {
+    "lint": "next lint --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "build": "next build",
+    "quality": "npm run lint && npm run typecheck && npm run test && npm run build",
+    "secrets:check": "bash engineer/checks/no-browser-secrets.sh && bash engineer/checks/no-tracked-artifacts.sh",
+    "prepare": "husky"
+  },
+  "devDependencies_to_add": {
+    "vitest": "^2.0.0",
+    "husky": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0"
+  }
+}

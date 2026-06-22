@@ -1,0 +1,49 @@
+# Scaffolded by /engineer-start — the authoritative quality gate.
+# Make this a REQUIRED status check in branch protection so red CI cannot merge.
+# Enforces ledger rows: F2, F3, F5, F6, F7, F9, F10.
+name: quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # F10 — reproducible install from the lockfile (fails if lock is stale/missing)
+      - run: npm ci
+
+      # F2 — no backend secret reachable by the browser
+      - name: No browser-exposed secrets
+        run: bash engineer/checks/no-browser-secrets.sh
+
+      # F9 — no build artifacts / env files tracked in git
+      - name: No tracked artifacts or env files
+        run: bash engineer/checks/no-tracked-artifacts.sh
+
+      # F3 — no committed credentials
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # F7 — lint (no-explicit-any, max-warnings 0) and typecheck
+      - run: npm run lint
+      - run: npm run typecheck
+
+      # F5 — tests (includes the fail-closed auth test and risky-seam smoke tests)
+      - run: npm run test
+
+      # build must succeed
+      - run: npm run build

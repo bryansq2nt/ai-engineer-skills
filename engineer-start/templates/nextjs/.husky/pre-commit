@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# Scaffolded by /engineer-start — fast local gate (F2, F9, F7).
+# CI remains the authority; this just catches the obvious failures before they cost a CI run.
+. "$(dirname -- "$0")/_/husky.sh" 2>/dev/null || true
+
+echo "› pre-commit: engineering gates"
+
+bash engineer/checks/no-browser-secrets.sh || exit 1
+bash engineer/checks/no-tracked-artifacts.sh || exit 1
+
+# Lint only staged files would be ideal; for the slice we run the project linter.
+npm run lint || { echo "❌ lint failed — fix before committing"; exit 1; }
+
+echo "✅ pre-commit gates passed"

@@ -1,0 +1,46 @@
+# Scaffolded by /engineer-start — hardened against F9 (artifacts/secrets in tree)
+# Renamed to `.gitignore` on install.
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+.turbo/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Unity
+Library/
+Temp/
+Obj/
+Build/
+Logs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+*.log
+
+# Local / temp
+tmp/
+*.tmp
+*.local

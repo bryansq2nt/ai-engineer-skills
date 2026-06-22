@@ -1,0 +1,24 @@
+# .cursorrules — scaffolded by /engineer-start
+# Mirror of CLAUDE.md / AGENTS.md for Cursor. Keep in sync.
+
+You are working in a project with machine-enforced engineering standards. CI will block merges
+that violate these — do not rely on being reminded.
+
+DEFINITION OF DONE (a change is not done until all are true):
+- It is on a branch with a PR, not pushed to main.
+- `{{QUALITY_CMD}}` passes: lint + typecheck + test + build.
+- No secret is reachable by the browser (no NEXT_PUBLIC_*_SECRET/KEY/TOKEN) and none is committed.
+- Auth/config fails closed: a missing secret denies access, proven by a test.
+- Any route touching auth, payments, email, uploads, or DB writes has a smoke test.
+- No new `as any`.
+
+HARD RULES:
+- Never expose backend secrets to the client. Never hardcode credentials.
+- Escape/sanitize user input before putting it into HTML or email.
+- Use structured logging and error tracking, not console.log/print, in production paths.
+- Keep modules small; separate auth, validation, IO, business logic, and UI.
+- No build artifacts, node_modules, .venv, or .env files in git.
+
+WORKFLOW:
+- Branch -> PR -> green CI -> merge. Commit finished features in small, reviewable commits.
+- Run `{{QUALITY_CMD}}` before committing.
