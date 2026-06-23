@@ -133,7 +133,7 @@ function parseSections(raw) {
   });
 
   if (!starts.length) {
-    return [{ id: 'section-1', number: '1', title: 'Full Report', text: raw, tags: deriveTags('Full Report', raw) }];
+    return [{ id: 'section-1', number: '1', title: 'Full Report', text: raw, tags: deriveTags('Full Report', raw), wordCount: countWords(raw) }];
   }
 
   return starts.map((start, i) => {
@@ -235,7 +235,7 @@ function renderSections() {
               <h2 class="section-title">${escapeHtml(section.title)}</h2>
               <span class="section-meta">
                 ${section.tags.map((tag) => `<span class="tag ${tag}">${labelFor(tag)}</span>`).join('')}
-                <span class="tag">${section.wordCount.toLocaleString()} words</span>
+                <span class="tag">${(section.wordCount ?? countWords(section.text)).toLocaleString()} words</span>
               </span>
             </span>
             <span class="chevron">−</span>

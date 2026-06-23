@@ -22,8 +22,12 @@ The skill base directory is given to you at runtime ("Base directory for this sk
 ## Step 0 — Resolve targets & output
 - **Targets** = the path arguments, else the current directory. Each may be a single repo or a folder
   of repos. Expand a folder-of-repos into its real projects (ignore vendor/build/SDK clones).
-- **Output dir** = `<first-target>/feedback-report/` (fallback `~/.claude/insight/feedback-report/`
-  if not writable). Create `<output>/data/`.
+- **Output dir** = `~/.claude/insight/feedback-report/<slug>/`, where `<slug>` is the first target's
+  basename sanitized to `[a-z0-9-]` (e.g. `/Users/me/dev/VAM` → `vam`). This lives **outside** the
+  user's project on purpose — never write report files into the audited repo, so the user gets zero
+  trash files in their tree. Namespacing by `<slug>` keeps each project's `audit-runs.json` progress
+  separate across re-runs. Create `<output>/data/` (mkdir -p; expand `~` to `$HOME`). If `~/.claude`
+  is somehow not writable, fall back to a system temp dir (`$TMPDIR/claude-insight/<slug>/`).
 
 ## Step 1 — Audit the code (Artifacts axis)
 - **Fan out with parallel subagents** (Agent tool), assigning repos/areas to each. For each ledger row
@@ -71,5 +75,7 @@ Put `evidence.scores.overall` into the matching audit run's `fluency_score` in `
 - **Re-runnable** — appending to `audit-runs.json` makes the Progress tab show failures dropping over
   time. Start scaffolds correct; audit proves it stayed correct, run after run.
 - The report is a **local artifact** containing real `file:line` vulnerabilities — never publish it.
+  It is written under `~/.claude/insight/feedback-report/<slug>/`, never inside the audited repo, so
+  the user's project stays clean. Tell the user where it lives when you hand over the URL.
 - If a project has few/no transcripts the Process axis is thin — hedge, don't over-claim. The
   dashboard degrades gracefully if any data file is absent.
