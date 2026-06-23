@@ -39,29 +39,43 @@ Requires [Claude Code](https://claude.com/claude-code). The AI-fluency engine is
 
 ## Use
 
-Everything below is typed in Claude Code, from your terminal.
+These commands are typed **inside Claude Code** (not your normal terminal). The simplest flow every time is the same three steps: **open your project → open a terminal in it → start Claude Code → type the command.**
 
-### 🔍 Run a feedback report on ONE project
-```
-/engineer-audit ~/code/my-app
-```
-Audits that project's code and your prompting, then opens your dashboard.
+### 🔍 Check ONE project
 
-### 🔍 Run a feedback report on MANY projects
-```
-/engineer-audit ~/code/app1 ~/code/app2 ~/code/api
-```
-…or point it at a folder of repos:
-```
-/engineer-audit ~/code
-```
-It reviews each repo in parallel and **synthesizes the patterns across all of them** — what you repeat, where you're strong, where you're weak — into one cross-project report.
+1. Open a terminal **in your project folder** (in most editors: right-click the folder → "Open in Integrated Terminal").
+2. Start Claude Code:
+   ```
+   claude
+   ```
+3. Type:
+   ```
+   /engineer-audit
+   ```
 
-### 🚀 Start a NEW project (the right way, from commit zero)
+That's it — **no path to type.** It audits the project you're already in and opens your dashboard.
+
+> Prefer not to move around? You can always point it at a path instead: `/engineer-audit ~/code/my-app`
+
+### 🔍 Check MANY projects at once
+
+Same three steps, but open the terminal in the **folder that holds all your projects**, then type:
 ```
-/engineer-start ~/code/my-new-app
+/engineer-audit
 ```
-Scaffolds the project so discipline is enforced by machines, not memory: AI rule files (`CLAUDE.md`, `AGENTS.md`, `.cursorrules`), a real `quality` script (lint + typecheck + test + build), GitHub Actions CI, a pre-commit hook, a hardened `.gitignore`, secret/artifact checks, and a fail-closed auth test. A bad commit gets blocked before it can land.
+It finds each repo inside, reviews them in parallel, and **synthesizes the patterns across all of them** — what you repeat, where you're strong, where you're weak — into one cross-project report.
+
+> Or name specific ones: `/engineer-audit app1 app2 api`
+
+### 🚀 Start a NEW project (correct from commit zero)
+
+Open a terminal **where you want the new project to live**, start Claude Code, then type:
+```
+/engineer-start
+```
+It scaffolds AI rule files (`CLAUDE.md`, `AGENTS.md`, `.cursorrules`) **and** the gates that enforce them — a real `quality` script (lint + typecheck + test + build), GitHub Actions CI, a pre-commit hook, a hardened `.gitignore`, secret/artifact checks, and a fail-closed auth test — so a bad commit gets blocked before it can land.
+
+> Or name a folder to create: `/engineer-start my-new-app`
 
 > **The loop:** `/engineer-audit` tells you what's wrong → `/engineer-start` makes it impossible to repeat → re-run `/engineer-audit` and the **Progress** view proves it worked.
 
