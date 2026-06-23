@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Developer Feedback Report</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="progress" id="progress"></div>
+
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Developer Insights</p>
+        <h1>Feedback Report</h1>
+      </div>
+      <div class="mode-switch" id="modeSwitch">
+        <button class="seg active" data-mode="overview" type="button">Overview</button>
+        <button class="seg" data-mode="fluency" type="button">AI Fluency</button>
+        <button class="seg" data-mode="review" type="button">Code Review</button>
+        <button class="seg" data-mode="progress" type="button">Progress</button>
+      </div>
+      <div class="topbar-actions is-hidden" id="reviewActions">
+        <button class="ghost-button" id="expandAll" type="button">Expand all</button>
+        <button class="ghost-button" id="collapseAll" type="button">Collapse all</button>
+        <button class="primary-button" id="focusToggle" type="button">Focus mode</button>
+      </div>
+    </header>
+
+    <section id="overviewMode" class="mode">
+      <div id="overviewRoot"></div>
+    </section>
+
+    <section id="progressMode" class="mode">
+      <div id="progressRoot"></div>
+    </section>
+
+    <section id="fluencyMode" class="mode">
+      <div id="fluencyRoot"></div>
+    </section>
+
+    <main class="shell mode is-hidden" id="reviewMode">
+      <aside class="sidebar" id="sidebar">
+        <section class="panel">
+          <label class="search-label" for="searchInput">Search full report</label>
+          <input id="searchInput" type="search" placeholder="Search exact report text..." />
+          <p class="muted" id="searchCount">No search active</p>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">Sections</div>
+          <nav class="toc" id="toc"></nav>
+        </section>
+
+        <section class="panel">
+          <div class="panel-title">Derived Filters</div>
+          <div class="filter-list" id="filters"></div>
+          <p class="fine-print">Tags are inferred for navigation only. Original wording is not changed.</p>
+        </section>
+      </aside>
+
+      <section class="reader">
+        <section class="hero-card">
+          <div>
+            <p class="eyebrow">Source Preserved</p>
+            <h2>Read, filter, and reflect without losing the original text.</h2>
+          </div>
+          <div class="metric-grid" id="metrics"></div>
+        </section>
+
+        <section class="visual-panel" aria-label="Derived theme distribution">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Derived Navigation Aid</p>
+              <h2>Theme Distribution</h2>
+            </div>
+            <p class="muted">Counts are based on section titles and keywords.</p>
+          </div>
+          <div class="chart" id="themeChart"></div>
+        </section>
+
+        <section class="content-tools">
+          <button class="tab active" data-view="sections" type="button">Section cards</button>
+          <button class="tab" data-view="raw" type="button">Original full text</button>
+          <button class="tab" data-view="notes" type="button">Reflection notes</button>
+          <button class="tab" data-view="bookmarks" type="button">Bookmarks</button>
+        </section>
+
+        <section id="sectionsView" class="view active"></section>
+
+        <section id="rawView" class="view">
+          <article class="raw-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Original Source</p>
+                <h2>Full Report Text</h2>
+              </div>
+              <button class="ghost-button copy-raw" type="button">Copy full text</button>
+            </div>
+            <pre id="rawText"></pre>
+          </article>
+        </section>
+
+        <section id="notesView" class="view">
+          <article class="raw-card">
+            <div class="section-head">
+              <div>
+                <p class="eyebrow">Local Only</p>
+                <h2>Reflection Notes</h2>
+              </div>
+              <button class="ghost-button" id="clearNotes" type="button">Clear notes</button>
+            </div>
+            <textarea id="notes" spellcheck="true" placeholder="Write private reflections here. Notes stay in this browser's localStorage."></textarea>
+          </article>
+        </section>
+
+        <section id="bookmarksView" class="view"></section>
+      </section>
+    </main>
+
+    <footer class="powered">
+      Powered by <a href="https://mutechlabs.com" target="_blank" rel="noopener">MutechLabs</a> · mutechlabs.com
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script src="app.js"></script>
+  </body>
+</html>

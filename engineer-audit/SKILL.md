@@ -1,47 +1,75 @@
 ---
 name: engineer-audit
-description: Cold, evidence-based audit of one or more existing repos against the engineering failure ledger (F1–F12). Reports regressions with file:line evidence — does NOT auto-fix. Use to check whether a project meets the bar, before deploy, or when the user runs /engineer-audit.
-argument-hint: "[target-dir-or-folder-of-repos]"
-allowed-tools: Bash, Read, Grep, Glob, Agent
+description: Generate a self-contained HTML feedback dashboard for one or many projects — a cold code review scored against the F1–F12 failure ledger (the Artifacts axis) AND a self-contained AI-fluency analysis of how the developer drives the agent (the Process axis). Re-runnable; tracks progress over time. Use to assess code, before deploy, or when the user runs /engineer-audit.
+argument-hint: "[path ...] [--no-open]"
+allowed-tools: Bash, Read, Grep, Glob, Agent, Write
 ---
 
-# /engineer-audit — does this code actually meet the bar?
+# /engineer-audit — one command, a full feedback report
 
-You produce a **cold, transparent, evidence-based** assessment of existing code against the same
-standard `/engineer-start` enforces. This is the closing half of the loop: start scaffolds correct,
-audit proves it stayed correct. Score against `../engineer-start/reference/failure-ledger.md`
-(F1–F12). Do not sugarcoat; do not give generic motivational advice; cite real `file:line`.
+You produce a **self-contained HTML dashboard** that tells a developer the truth about their work on
+the project(s) they name — one project or many. It has two axes:
 
-## Step 0 — Scope
-- Target = arg, else cwd. If it's a folder of many repos, list the real projects (ignore vendor/
-  build/SDK clones), and **fan out with parallel subagents** — assign repo groups to each. Then
-  synthesize cross-project patterns; do not just summarize each repo independently.
+- **Artifacts** — a cold, evidence-based code review scored against the F1–F12 failure ledger
+  (`../engineer-start/reference/failure-ledger.md`). Cite real `file:line`; never sugarcoat.
+- **Process** — a self-contained AI-fluency analysis of how they drive the agent, computed by the
+  bundled `fluency.py` (pure stdlib, no API, no external skill).
 
-## Step 1 — Check each ledger row with real tools (not vibes)
-For each repo, gather evidence:
-- **F2** browser secrets: `grep -REn 'NEXT_PUBLIC_[A-Z0-9_]*(SECRET|KEY|TOKEN|PASSWORD)'` (minus the documented public allow-list).
-- **F3** hardcoded creds: run/emulate gitleaks; grep for AWS/`sk-`/`api_key =` patterns.
-- **F1** fail-open auth: read auth guards; flag any that allow when a secret is unset.
-- **F5/F6** tests & CI: is there a `quality`-equivalent script? a `.github/workflows`? real tests vs. leftover examples?
-- **F4** HTML/email injection: grep for user input interpolated into HTML/email bodies.
-- **F7** `as any`: count occurrences; note stale generated DB types.
-- **F8** oversized modules: files mixing auth+validation+IO+business+UI; flag large files.
-- **F9** hygiene: `git ls-files` for tracked artifacts/`.env`.
-- **F10** Python deps: lockfile present? CI installs from it?
-- **F11** logging: bare `console.log`/`print` in production paths; error tracking present?
-- **F12** is security reviewed before deploy or after a bug?
+Everything the skill needs is bundled next to this file: `fluency.py` and `template/`.
+The skill base directory is given to you at runtime ("Base directory for this skill: …") — call it
+`<skill>`. Do not depend on any other installed skill.
 
-## Step 2 — Report (the raw-report format, scored)
-Produce: a per-repo F1–F12 status table (pass / fail / n-a, with `file:line` evidence), then a
-cross-project synthesis: developer profile, overall verdict, strongest repos vs. weakest, recurring
-patterns, ranked next-learning priorities, and a 30-day fix list ordered by leverage. Be blunt and
-specific. Where a repo is genuinely strong, say so — but only if the evidence supports it.
+## Step 0 — Resolve targets & output
+- **Targets** = the path arguments, else the current directory. Each may be a single repo or a folder
+  of repos. Expand a folder-of-repos into its real projects (ignore vendor/build/SDK clones).
+- **Output dir** = `<first-target>/feedback-report/` (fallback `~/.claude/insight/feedback-report/`
+  if not writable). Create `<output>/data/`.
 
-## Step 3 — Feed the loop back
-End by naming any **new** failure pattern not yet in the ledger, and recommend adding it to
-`../engineer-start/reference/failure-ledger.md` so the standard learns from this audit.
+## Step 1 — Audit the code (Artifacts axis)
+- **Fan out with parallel subagents** (Agent tool), assigning repos/areas to each. For each ledger row
+  F1–F12, gather real evidence with tools (grep/read), e.g. browser secrets
+  `NEXT_PUBLIC_*_(SECRET|KEY|TOKEN)`, fail-open auth guards, `as any`, missing tests/CI, tracked
+  artifacts, email/HTML injection, bare logging. Synthesize cross-project patterns — don't just
+  summarize each repo.
+- Write the cold prose review (developer profile, verdict, strengths, weaknesses with `file:line`,
+  cross-project patterns, ranked next steps, 30-day plan) to `<output>/data/raw-report.txt`.
+- Decide each F1–F12 status (`flagged` / `clear`) and **append** a run to
+  `<output>/data/audit-runs.json` (create with schema `audit-runs/1` if missing; shape per the
+  existing baseline: `{date,label,fluency_score,failures:{F1..F12}}`). Appending is deliberate — each
+  re-run extends the **Progress** trend automatically.
+
+## Step 2 — Run the AI-fluency analysis (Process axis) — self-contained
+```bash
+python3 <skill>/fluency.py -o <output>/data/evidence.json --project <target1> [--project <target2> ...]
+```
+(Omit `--project` to analyze all transcripts.) This reads `~/.claude/projects` transcripts and writes
+`evidence.json` deterministically — no API, no external package.
+
+Then **you** write `<output>/data/analysis.json` from that evidence — the qualitative skill map.
+Read `evidence.json`, then produce JSON of exactly this shape, grounded in the real
+`behavior.sample_prompts` (quote them verbatim — never invent):
+```
+{ "overall_read": "...",
+  "skill_map": [ {"competency":"Delegation|Description|Discernment|Diligence","level":1-5,
+                  "level_label":"Emerging|Developing|Proficient|Advanced|Expert",
+                  "summary":"...","evidence":["real quote", ...],"next_move":"..."} ],   // exactly 4
+  "top_growth": [ {"title":"...","why":"cites their numbers","how":"...",
+                   "example_before":"a REAL prompt verbatim","example_after":"your rewrite"} ], // 2-3
+  "strengths": ["...", ...] }
+```
+Put `evidence.scores.overall` into the matching audit run's `fluency_score` in `audit-runs.json`.
+
+## Step 3 — Assemble & open
+- Copy `<skill>/template/{index.html,app.js,styles.css}` into `<output>/`.
+- Confirm `<output>/data/` has `raw-report.txt`, `audit-runs.json`, `evidence.json`, `analysis.json`.
+- Unless `--no-open`: serve and open it — `python3 -m http.server` in `<output>` — and give the user
+  the URL. The report carries the "Powered by MutechLabs · mutechlabs.com" footer.
 
 ## Notes
-- Report only — never rewrite the audited code. Fixes are a separate, deliberate action.
-- This is the deterministic-evidence sibling of the `ai-fluency` skill: that one audits how you
-  *drive the agent*; this one audits the *code that survives*.
+- **One project or many** — pass multiple paths; the audit fans out per repo and fluency scopes to
+  exactly those projects (`--project` per target).
+- **Re-runnable** — appending to `audit-runs.json` makes the Progress tab show failures dropping over
+  time. Start scaffolds correct; audit proves it stayed correct, run after run.
+- The report is a **local artifact** containing real `file:line` vulnerabilities — never publish it.
+- If a project has few/no transcripts the Process axis is thin — hedge, don't over-claim. The
+  dashboard degrades gracefully if any data file is absent.
